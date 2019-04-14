@@ -1,0 +1,49 @@
+description: >
+  Use the Orb to run accessibility tests on your staging environment when a PR is merged.
+
+usage:
+  version: 2.1
+
+  orbs:
+    pa11yci: nebulab/pa11yci@1.0.0
+
+  workflows:
+    build-and-deploy:
+      jobs:
+        - tests
+        - preview:
+            requires:
+              - tests
+        - deploy:
+            requires:
+              - build
+            filters:
+              branches:
+                only:
+                  - master
+        - pa11yci/run:
+            requires:
+              - deploy
+            filters:
+              branches:
+                only: master
+
+  jobs:
+    tests:
+      docker:
+        - image: circleci/ruby
+      steps:
+        - checkout
+        - run:
+            name: Install bundle
+            command: bundle install
+        - run:
+            name: Run tests
+            command: bundle exec rspec
+    deploy:
+      docker:
+        - image: circleci/ruby
+      steps:
+        - run:
+            name: Deploy to production
+            command: git push production master

@@ -1,0 +1,34 @@
+description: >
+  Runs Pa11y CI on a URL and collects the output as CircleCI artifacts.
+
+executor: default
+
+parameters:
+  custom_url_command:
+    type: string
+    description: >
+      A command that rewrites your .pa11yci file, replacing the standard URL with the URL of your
+      preview branch.
+    default: ~
+
+steps:
+  - attach_workspace:
+      at: /tmp/workspace
+  - checkout
+  - run:
+      name: Install Pa11y
+      command: sudo npm install -g pa11y-ci --unsafe-perm=true --allow-root
+  - when:
+      condition: <<parameters.custom_url_command>>
+      steps:
+        - run:
+            name: Configure custom Pa11y URL
+            command: <<parameters.custom_url_command>>
+  - run:
+      name: Run Pa11y
+      command: |
+        mkdir -p /tmp/pa11y
+        pa11y-ci
+  - store_artifacts:
+      path: /tmp/pa11y
+      destination: pa11y
