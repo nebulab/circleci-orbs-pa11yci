@@ -24,10 +24,6 @@ steps:
         - run:
             name: Configure custom Pa11y URL
             command: <<parameters.custom_url_command>>
-            filters:
-              branch:
-                ignore:
-                  - master
   - run:
       name: Run Pa11y
       command: |
