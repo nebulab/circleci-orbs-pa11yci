@@ -1,0 +1,96 @@
+description: >
+  Use the push and publish jobs to update and publish your staging documentation when a branch is
+  merged into master and deployed to staging, then update and publish your production project when
+  deploying to production.
+
+usage:
+  version: 2.1
+
+  orbs:
+    pa11yci: nebulab/pa11yci@2.0.0
+
+  workflows:
+    build-and-deploy:
+      jobs:
+        - tests
+        - deploy-staging:
+            requires:
+              - build
+        - pa11yci/push:
+            name: push-pa11yci-staging
+            project: your-pa11yci-org/your-pa11yci-project-staging
+            git_token: $STOPLIGHT_GIT_TOKEN
+            source_dir: pa11yci
+            username: $STOPLIGHT_USERNAME
+            filters:
+              branches:
+                only: master
+            requires:
+              - deploy-staging
+        - pa11yci/publish:
+            name: publish-pa11yci-staging
+            api_token: $STOPLIGHT_API_TOKEN
+            domain: your-site-staging.docs.pa11yci.io
+            requires:
+              - push-pa11yci-staging
+            filters:
+              branches:
+                only: master
+        - approve-production:
+            type: approval
+            requires:
+              - build
+              - publish-pa11yci-staging
+            filters:
+              branches:
+                only: master
+        - deploy-production:
+            requires:
+              - approve-production
+        - pa11yci/push:
+            name: push-pa11yci-production
+            project: your-pa11yci-org/your-pa11yci-project-production
+            git_token: $STOPLIGHT_GIT_TOKEN
+            source_dir: pa11yci
+            username: $STOPLIGHT_USERNAME
+            filters:
+              branches:
+                only: master
+            requires:
+              - deploy-staging
+        - pa11yci/publish:
+            name: publish-pa11yci-production
+            api_token: $STOPLIGHT_API_TOKEN
+            domain: your-site-production.docs.pa11yci.io
+            requires:
+              - push-pa11yci-production
+            filters:
+              branches:
+                only: master
+
+  jobs:
+    tests:
+      docker:
+        - image: circleci/ruby
+      steps:
+        - checkout
+        - run:
+            name: Install bundle
+            command: bundle install
+        - run:
+            name: Run tests
+            command: bundle exec rspec
+    deploy-staging:
+      docker:
+        - image: circleci/ruby
+      steps:
+        - run:
+            name: Deploy to production
+            command: git push staging master
+    deploy-production:
+      docker:
+        - image: circleci/ruby
+      steps:
+        - run:
+            name: Deploy to production
+            command: git push production master
