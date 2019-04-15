@@ -16,7 +16,7 @@ usage:
         - preview:
             requires:
               - tests
-        - pa11yci/run:
+        - pa11yci/a11y-audit:
             requires:
               - preview
             custom_url_command: |

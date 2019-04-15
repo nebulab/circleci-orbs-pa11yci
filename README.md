@@ -25,7 +25,7 @@ orbs:
 workflows:
   cool-workflow:
     jobs:
-      - pa11yci/run
+      - pa11yci/a11y-audit
 ```
 
 Check the [Pa11y CI documentation](https://github.com/pa11y/pa11y-ci) for more information about how

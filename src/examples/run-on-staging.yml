@@ -21,7 +21,7 @@ usage:
               branches:
                 only:
                   - master
-        - pa11yci/run:
+        - pa11yci/a11y-audit:
             requires:
               - deploy
             filters:
